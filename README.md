@@ -1,91 +1,105 @@
 # excel-inspect
 
-Go library to inspect Excel file structure: sheets, headers, columns, row counts, and sample values.
+`excel-inspect` is a Go library for inspecting `.xlsx` files and exporting results as JSON-compatible structs or TOON.
 
-## Installation
+## What Is In This Codebase
 
-```bash
-go get github.com/rizrmd/excel-inspect
-```
+- `inspect.go`: library implementation (`package excelinspect`)
+- `example/main.go`: runnable example that inspects one file and writes TOON output to `out.txt`
+- `go.mod` / `go.sum`: module and dependencies
+- `out.txt`: generated output file used by the example
+
+## Core Capabilities
+
+- Open an Excel workbook and skip hidden sheets
+- Inspect sheet metadata (`name`, `row_count`, `column_count`)
+- Inspect detailed sheet data:
+  - detected headers
+  - column metadata (`name`, `start_position`, `data_type`)
+  - sample values
+  - section breakdown when multiple header regions are detected
+- Export as:
+  - Go structs (`*FileInfo`)
+  - TOON text output (`InspectTOON`, `InspectWithDetailsTOON`, `InspectWithDetailsTOONSample`)
+- Emit progress updates via callback or channel
+
+## Public API
+
+Constructor and lifecycle:
+
+- `New(filePath string, opts ...InspectorOption) (*Inspector, error)`
+- `(*Inspector).Close() error`
+
+Inspection methods:
+
+- `(*Inspector).Inspect() (*FileInfo, error)`
+- `(*Inspector).InspectWithDetails() (*FileInfo, error)`
+- `(*Inspector).InspectTOON() (string, error)`
+- `(*Inspector).InspectWithDetailsTOON() (string, error)`
+- `(*Inspector).InspectWithDetailsTOONSample() (string, error)`
+
+Options currently wired in:
+
+- `WithProgressCallback(func(ProgressInfo))`
+- `WithProgressChannel(chan<- ProgressInfo)`
+
+Defined but currently no-op in `inspect.go`:
+
+- `WithTimeout(int)`
+- `WithHeaderRow(int)`
+- `WithMaxSampleRows(int)`
+- `WithIncludeRowCount(bool)`
 
 ## Usage
+
+Because `go.mod` currently declares `module excel-inspect`, import it as:
+
+```go
+import excelinspect "excel-inspect"
+```
+
+Minimal example:
 
 ```go
 package main
 
 import (
-    "encoding/json"
-    "fmt"
-    "log"
+	"fmt"
+	"log"
 
-    excelinspect "github.com/rizrmd/excel-inspect"
+	excelinspect "excel-inspect"
 )
 
 func main() {
-    ins, err := excelinspect.New("file.xlsx")
-    if err != nil {
-        log.Fatalf("Failed to create inspector: %v", err)
-    }
-    defer ins.Close()
+	ins, err := excelinspect.New("file.xlsx")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ins.Close()
 
-    // Quick inspection (sheets only)
-    info, err := ins.Inspect()
-    if err != nil {
-        log.Fatalf("Failed to inspect: %v", err)
-    }
-    fmt.Printf("Sheets: %d\n", len(info.Sheets))
+	info, err := ins.InspectWithDetails()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // Full inspection with details
-    info, err = ins.InspectWithDetails()
-    if err != nil {
-        log.Fatalf("Failed to inspect: %v", err)
-    }
-
-    // Print as JSON
-    b, _ := json.MarshalIndent(info, "", "  ")
-    fmt.Println(string(b))
+	fmt.Printf("sheets: %d\n", len(info.Sheets))
 }
 ```
 
-## Options
+## Example Program
 
-### Timeout
+Run:
 
-For large files, set a timeout to prevent hanging:
-
-```go
-ins, err := excelinspect.New("large_file.xlsx", excelinspect.WithTimeout(30))
+```bash
+go run ./example
 ```
 
-## Output Structure
+What it does:
 
-```json
-{
-  "sheets": [
-    {"name": "Sheet1", "row_count": 1000, "column_count": 10}
-  ],
-  "sheet_details": [
-    {
-      "name": "Sheet1",
-      "row_count": 1000,
-      "column_count": 10,
-      "headers": ["ID", "Name", "Email"],
-      "columns": [
-        {
-          "name": "ID",
-          "start_position": "A1",
-          "sample_values": ["1", "2", "3", "4", "5"],
-          "data_type": "number"
-        }
-      ]
-    }
-  ]
-}
-```
+- removes existing `out.txt` if present
+- opens a hardcoded workbook path in `example/main.go`
+- prints progress to stdout
+- runs `InspectWithDetails()`
+- writes full TOON output to `out.txt`
 
-## Features
-
-- **Hidden sheets**: Automatically skipped
-- **Fast**: Uses streaming reader (~5s for 1M+ row files)
-- **Timeout**: Configurable timeout for large files
-- **Thread-safe**: Can be used concurrently with proper locking
+If you run the example locally, update the workbook path in `example/main.go` first.
