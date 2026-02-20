@@ -3,12 +3,15 @@ package excelinspect
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/thedatashed/xlsxreader"
+	"github.com/xuri/excelize/v2"
 )
 
 type Inspector struct {
 	filePath string
+	file     *excelize.File
 	xl       *xlsxreader.XlsxFileCloser
 }
 
@@ -61,13 +64,20 @@ func New(filePath string, opts ...InspectorOption) (*Inspector, error) {
 		return nil, fmt.Errorf("file not found: %w", err)
 	}
 
+	f, err := excelize.OpenFile(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open excel file: %w", err)
+	}
+
 	xl, err := xlsxreader.OpenFile(filePath)
 	if err != nil {
+		f.Close()
 		return nil, fmt.Errorf("failed to open excel file: %w", err)
 	}
 
 	ins := &Inspector{
 		filePath: filePath,
+		file:     f,
 		xl:       xl,
 	}
 
@@ -79,24 +89,35 @@ func New(filePath string, opts ...InspectorOption) (*Inspector, error) {
 }
 
 func (i *Inspector) Close() error {
+	if i.file != nil {
+		i.file.Close()
+	}
 	if i.xl != nil {
-		return i.xl.Close()
+		i.xl.Close()
 	}
 	return nil
 }
 
 func (i *Inspector) Inspect() (*FileInfo, error) {
-	sheetInfos := getSheetInfos(i.xl)
+	sheets := i.file.GetSheetList()
 
 	info := &FileInfo{
-		Sheets: make([]SheetInfo, 0, len(sheetInfos)),
+		Sheets: make([]SheetInfo, 0, len(sheets)),
 	}
 
-	for _, si := range sheetInfos {
+	for _, sheetName := range sheets {
+		visible, err := i.file.GetSheetVisible(sheetName)
+		if err != nil || !visible {
+			continue
+		}
+
+		rowCount := i.getRowCount(sheetName)
+		colCount := i.getColumnCount(sheetName)
+
 		info.Sheets = append(info.Sheets, SheetInfo{
-			Name:        si.Name,
-			RowCount:    si.RowCount,
-			ColumnCount: si.ColumnCount,
+			Name:        sheetName,
+			RowCount:    rowCount,
+			ColumnCount: colCount,
 		})
 	}
 
@@ -104,109 +125,143 @@ func (i *Inspector) Inspect() (*FileInfo, error) {
 }
 
 func (i *Inspector) InspectWithDetails() (*FileInfo, error) {
-	sheetInfos := getSheetInfos(i.xl)
+	sheets := i.file.GetSheetList()
 
 	info := &FileInfo{
-		Sheets:       make([]SheetInfo, 0, len(sheetInfos)),
-		SheetDetails: make([]SheetDetail, 0, len(sheetInfos)),
+		Sheets:       make([]SheetInfo, 0, len(sheets)),
+		SheetDetails: make([]SheetDetail, 0, len(sheets)),
 	}
 
-	for _, si := range sheetInfos {
+	for _, sheetName := range sheets {
+		visible, err := i.file.GetSheetVisible(sheetName)
+		if err != nil || !visible {
+			continue
+		}
+
+		rowCount := i.getRowCount(sheetName)
+		colCount := i.getColumnCount(sheetName)
+
 		info.Sheets = append(info.Sheets, SheetInfo{
-			Name:        si.Name,
-			RowCount:    si.RowCount,
-			ColumnCount: si.ColumnCount,
+			Name:        sheetName,
+			RowCount:    rowCount,
+			ColumnCount: colCount,
 		})
 
-		detail := SheetDetail{
-			Name:        si.Name,
-			RowCount:    si.RowCount,
-			ColumnCount: si.ColumnCount,
-			Headers:     si.Headers,
-			Columns:     si.Columns,
-		}
+		detail := i.inspectSheetDetail(sheetName)
 		info.SheetDetails = append(info.SheetDetails, detail)
 	}
 
 	return info, nil
 }
 
-type sheetInfo struct {
-	Name        string
-	RowCount    int
-	ColumnCount int
-	Headers     []string
-	Columns     []ColumnInfo
+func (i *Inspector) getRowCount(sheetName string) int {
+	rows := i.xl.ReadRows(sheetName)
+	rowCount := 0
+	for range rows {
+		rowCount++
+		if rowCount > 1000 {
+			break
+		}
+	}
+	return rowCount
 }
 
-func getSheetInfos(xl *xlsxreader.XlsxFileCloser) []sheetInfo {
-	var result []sheetInfo
+func (i *Inspector) getColumnCount(sheetName string) int {
+	rows := i.xl.ReadRows(sheetName)
+	for row := range rows {
+		return len(row.Cells)
+	}
+	return 0
+}
 
-	for _, sheetName := range xl.Sheets {
-		si := sheetInfo{
-			Name: sheetName,
-		}
-
-		rows := xl.ReadRows(sheetName)
-		rowCount := 0
-		maxCols := 0
-
-		for row := range rows {
-			rowCount++
-
-			if rowCount == 1 {
-				maxCols = len(row.Cells)
-				si.ColumnCount = maxCols
-				for _, cell := range row.Cells {
-					si.Headers = append(si.Headers, cell.Value)
-				}
-			} else if rowCount == 2 {
-				for colIdx, cell := range row.Cells {
-					if colIdx >= maxCols {
-						break
-					}
-					colInfo := ColumnInfo{
-						Name:          si.Headers[colIdx],
-						StartPosition: fmt.Sprintf("%s2", columnLetter(colIdx)),
-					}
-					if cell.Value != "" {
-						colInfo.SampleValues = append(colInfo.SampleValues, cell.Value)
-						colInfo.DataType = getDataType(cell.Value)
-					}
-					si.Columns = append(si.Columns, colInfo)
-				}
-			} else if rowCount <= 6 {
-				for colIdx, cell := range row.Cells {
-					if colIdx >= maxCols || colIdx >= len(si.Columns) {
-						break
-					}
-					if cell.Value != "" {
-						si.Columns[colIdx].SampleValues = append(
-							si.Columns[colIdx].SampleValues, cell.Value)
-					}
-				}
-			}
-
-			if rowCount > 1000 {
-				break
-			}
-		}
-
-		si.RowCount = rowCount
-
-		for colIdx := range si.Headers {
-			if colIdx >= len(si.Columns) {
-				si.Columns = append(si.Columns, ColumnInfo{
-					Name:          si.Headers[colIdx],
-					StartPosition: fmt.Sprintf("%s2", columnLetter(colIdx)),
-				})
-			}
-		}
-
-		result = append(result, si)
+func (i *Inspector) inspectSheetDetail(sheetName string) SheetDetail {
+	detail := SheetDetail{
+		Name: sheetName,
 	}
 
-	return result
+	rows := i.xl.ReadRows(sheetName)
+	rowCount := 0
+	headerRow := 1
+
+	for row := range rows {
+		rowCount++
+
+		if rowCount == 1 {
+			detail.ColumnCount = len(row.Cells)
+			if detail.ColumnCount == 0 {
+				continue
+			}
+			skipRow := false
+			for idx, cell := range row.Cells {
+				if idx < 3 && cell.Value != "" {
+					if len(cell.Value) < 5 || strings.Contains(cell.Value, "-") {
+						skipRow = true
+						break
+					}
+				}
+			}
+			if skipRow && detail.ColumnCount > 3 {
+				headerRow = 2
+				continue
+			}
+			for _, cell := range row.Cells {
+				detail.Headers = append(detail.Headers, cell.Value)
+			}
+		} else if rowCount == headerRow {
+			if len(detail.Headers) == 0 {
+				detail.ColumnCount = len(row.Cells)
+				for _, cell := range row.Cells {
+					detail.Headers = append(detail.Headers, cell.Value)
+				}
+			}
+		}
+
+		if len(detail.Headers) > 0 && rowCount == headerRow+1 {
+			maxCols := len(detail.Headers)
+			for colIdx, cell := range row.Cells {
+				if colIdx >= maxCols {
+					break
+				}
+				colInfo := ColumnInfo{
+					Name:          detail.Headers[colIdx],
+					StartPosition: fmt.Sprintf("%s%d", columnLetter(colIdx), headerRow),
+				}
+				if cell.Value != "" {
+					colInfo.SampleValues = append(colInfo.SampleValues, cell.Value)
+					colInfo.DataType = getDataType(cell.Value)
+				}
+				detail.Columns = append(detail.Columns, colInfo)
+			}
+		} else if len(detail.Columns) > 0 && rowCount <= headerRow+5 {
+			maxCols := len(detail.Headers)
+			for colIdx, cell := range row.Cells {
+				if colIdx >= maxCols || colIdx >= len(detail.Columns) {
+					break
+				}
+				if cell.Value != "" {
+					detail.Columns[colIdx].SampleValues = append(
+						detail.Columns[colIdx].SampleValues, cell.Value)
+				}
+			}
+		}
+
+		if rowCount > 1000 {
+			break
+		}
+	}
+
+	detail.RowCount = rowCount
+
+	for colIdx := range detail.Headers {
+		if colIdx >= len(detail.Columns) {
+			detail.Columns = append(detail.Columns, ColumnInfo{
+				Name:          detail.Headers[colIdx],
+				StartPosition: fmt.Sprintf("%s%d", columnLetter(colIdx), headerRow),
+			})
+		}
+	}
+
+	return detail
 }
 
 func getDataType(value string) string {
