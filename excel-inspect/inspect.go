@@ -1,28 +1,33 @@
 package excelinspect
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"sync"
-	"time"
 
-	"github.com/xuri/excelize/v2"
+	"github.com/thedatashed/xlsxreader"
 )
 
 type Inspector struct {
 	filePath string
-	file     *excelize.File
-	mu       sync.Mutex
-	Timeout  int
+	xl       *xlsxreader.XlsxFileCloser
 }
 
 type InspectorOption func(*Inspector)
 
 func WithTimeout(seconds int) InspectorOption {
-	return func(i *Inspector) {
-		i.Timeout = seconds
-	}
+	return func(i *Inspector) {}
+}
+
+func WithHeaderRow(row int) InspectorOption {
+	return func(i *Inspector) {}
+}
+
+func WithMaxSampleRows(rows int) InspectorOption {
+	return func(i *Inspector) {}
+}
+
+func WithIncludeRowCount(include bool) InspectorOption {
+	return func(i *Inspector) {}
 }
 
 type SheetInfo struct {
@@ -56,14 +61,14 @@ func New(filePath string, opts ...InspectorOption) (*Inspector, error) {
 		return nil, fmt.Errorf("file not found: %w", err)
 	}
 
-	f, err := excelize.OpenFile(filePath)
+	xl, err := xlsxreader.OpenFile(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open excel file: %w", err)
 	}
 
 	ins := &Inspector{
 		filePath: filePath,
-		file:     f,
+		xl:       xl,
 	}
 
 	for _, opt := range opts {
@@ -74,179 +79,134 @@ func New(filePath string, opts ...InspectorOption) (*Inspector, error) {
 }
 
 func (i *Inspector) Close() error {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-	if i.file != nil {
-		return i.file.Close()
+	if i.xl != nil {
+		return i.xl.Close()
 	}
 	return nil
 }
 
 func (i *Inspector) Inspect() (*FileInfo, error) {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-
-	sheets := i.file.GetSheetList()
-	if len(sheets) == 0 {
-		return nil, fmt.Errorf("no sheets found in file")
-	}
+	sheetInfos := getSheetInfos(i.xl)
 
 	info := &FileInfo{
-		Sheets: make([]SheetInfo, 0, len(sheets)),
+		Sheets: make([]SheetInfo, 0, len(sheetInfos)),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(i.Timeout)*time.Second)
-	defer cancel()
-
-	for _, sheetName := range sheets {
-		visible, err := i.file.GetSheetVisible(sheetName)
-		if err != nil || !visible {
-			continue
-		}
-
-		select {
-		case <-ctx.Done():
-			return info, nil
-		default:
-		}
-
-		sheetInfo := i.inspectSheetWithContext(ctx, sheetName)
-		info.Sheets = append(info.Sheets, sheetInfo)
+	for _, si := range sheetInfos {
+		info.Sheets = append(info.Sheets, SheetInfo{
+			Name:        si.Name,
+			RowCount:    si.RowCount,
+			ColumnCount: si.ColumnCount,
+		})
 	}
 
 	return info, nil
 }
 
 func (i *Inspector) InspectWithDetails() (*FileInfo, error) {
-	i.mu.Lock()
-	defer i.mu.Unlock()
-
-	sheets := i.file.GetSheetList()
-	if len(sheets) == 0 {
-		return nil, fmt.Errorf("no sheets found in file")
-	}
+	sheetInfos := getSheetInfos(i.xl)
 
 	info := &FileInfo{
-		Sheets:       make([]SheetInfo, 0, len(sheets)),
-		SheetDetails: make([]SheetDetail, 0, len(sheets)),
+		Sheets:       make([]SheetInfo, 0, len(sheetInfos)),
+		SheetDetails: make([]SheetDetail, 0, len(sheetInfos)),
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(i.Timeout)*time.Second)
-	defer cancel()
+	for _, si := range sheetInfos {
+		info.Sheets = append(info.Sheets, SheetInfo{
+			Name:        si.Name,
+			RowCount:    si.RowCount,
+			ColumnCount: si.ColumnCount,
+		})
 
-	for _, sheetName := range sheets {
-		visible, err := i.file.GetSheetVisible(sheetName)
-		if err != nil || !visible {
-			continue
+		detail := SheetDetail{
+			Name:        si.Name,
+			RowCount:    si.RowCount,
+			ColumnCount: si.ColumnCount,
+			Headers:     si.Headers,
+			Columns:     si.Columns,
 		}
-
-		sheetInfo := i.inspectSheetWithContext(ctx, sheetName)
-		info.Sheets = append(info.Sheets, sheetInfo)
-
-		select {
-		case <-ctx.Done():
-			return info, nil
-		default:
-		}
-
-		detail := i.inspectSheetDetailWithContext(ctx, sheetName)
 		info.SheetDetails = append(info.SheetDetails, detail)
 	}
 
 	return info, nil
 }
 
-func (i *Inspector) inspectSheetWithContext(ctx context.Context, sheetName string) SheetInfo {
-	resultCh := make(chan SheetInfo, 1)
-
-	go func() {
-		resultCh <- i.inspectSheet(sheetName)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return SheetInfo{Name: sheetName, RowCount: 0, ColumnCount: 0}
-	case result := <-resultCh:
-		return result
-	}
+type sheetInfo struct {
+	Name        string
+	RowCount    int
+	ColumnCount int
+	Headers     []string
+	Columns     []ColumnInfo
 }
 
-func (i *Inspector) inspectSheet(sheetName string) SheetInfo {
-	colCount := 0
+func getSheetInfos(xl *xlsxreader.XlsxFileCloser) []sheetInfo {
+	var result []sheetInfo
 
-	for colIdx := 0; colIdx < 100; colIdx++ {
-		colLetter := columnLetter(colIdx)
-		headerCell := fmt.Sprintf("%s1", colLetter)
-		val, err := i.file.GetCellValue(sheetName, headerCell)
-		if err != nil || val == "" {
-			colCount = colIdx
-			break
-		}
-	}
-
-	return SheetInfo{
-		Name:        sheetName,
-		RowCount:    0,
-		ColumnCount: colCount,
-	}
-}
-
-func (i *Inspector) inspectSheetDetailWithContext(ctx context.Context, sheetName string) SheetDetail {
-	resultCh := make(chan SheetDetail, 1)
-
-	go func() {
-		resultCh <- i.inspectSheetDetail(sheetName)
-	}()
-
-	select {
-	case <-ctx.Done():
-		return SheetDetail{Name: sheetName}
-	case result := <-resultCh:
-		return result
-	}
-}
-
-func (i *Inspector) inspectSheetDetail(sheetName string) SheetDetail {
-	detail := SheetDetail{
-		Name: sheetName,
-	}
-
-	detail.Headers = make([]string, 0, 100)
-	detail.Columns = make([]ColumnInfo, 0, 100)
-
-	for colIdx := 0; colIdx < 500; colIdx++ {
-		colLetter := columnLetter(colIdx)
-
-		colInfo := ColumnInfo{
-			StartPosition: fmt.Sprintf("%s1", colLetter),
+	for _, sheetName := range xl.Sheets {
+		si := sheetInfo{
+			Name: sheetName,
 		}
 
-		headerCell := fmt.Sprintf("%s1", colLetter)
-		headerVal, err := i.file.GetCellValue(sheetName, headerCell)
-		if err != nil || headerVal == "" {
-			detail.ColumnCount = colIdx
-			break
-		}
+		rows := xl.ReadRows(sheetName)
+		rowCount := 0
+		maxCols := 0
 
-		colInfo.Name = headerVal
-		detail.Headers = append(detail.Headers, colInfo.Name)
+		for row := range rows {
+			rowCount++
 
-		colInfo.SampleValues = make([]interface{}, 0, 5)
-		for sampleRow := 2; sampleRow <= 6; sampleRow++ {
-			cell := fmt.Sprintf("%s%d", colLetter, sampleRow)
-			val, _ := i.file.GetCellValue(sheetName, cell)
-			if val != "" {
-				colInfo.SampleValues = append(colInfo.SampleValues, val)
-				if colInfo.DataType == "" {
-					colInfo.DataType = getDataType(val)
+			if rowCount == 1 {
+				maxCols = len(row.Cells)
+				si.ColumnCount = maxCols
+				for _, cell := range row.Cells {
+					si.Headers = append(si.Headers, cell.Value)
 				}
+			} else if rowCount == 2 {
+				for colIdx, cell := range row.Cells {
+					if colIdx >= maxCols {
+						break
+					}
+					colInfo := ColumnInfo{
+						Name:          si.Headers[colIdx],
+						StartPosition: fmt.Sprintf("%s2", columnLetter(colIdx)),
+					}
+					if cell.Value != "" {
+						colInfo.SampleValues = append(colInfo.SampleValues, cell.Value)
+						colInfo.DataType = getDataType(cell.Value)
+					}
+					si.Columns = append(si.Columns, colInfo)
+				}
+			} else if rowCount <= 6 {
+				for colIdx, cell := range row.Cells {
+					if colIdx >= maxCols || colIdx >= len(si.Columns) {
+						break
+					}
+					if cell.Value != "" {
+						si.Columns[colIdx].SampleValues = append(
+							si.Columns[colIdx].SampleValues, cell.Value)
+					}
+				}
+			}
+
+			if rowCount > 1000 {
+				break
 			}
 		}
 
-		detail.Columns = append(detail.Columns, colInfo)
+		si.RowCount = rowCount
+
+		for colIdx := range si.Headers {
+			if colIdx >= len(si.Columns) {
+				si.Columns = append(si.Columns, ColumnInfo{
+					Name:          si.Headers[colIdx],
+					StartPosition: fmt.Sprintf("%s2", columnLetter(colIdx)),
+				})
+			}
+		}
+
+		result = append(result, si)
 	}
 
-	return detail
+	return result
 }
 
 func getDataType(value string) string {
@@ -273,12 +233,4 @@ func columnLetter(colIdx int) string {
 		}
 	}
 	return result
-}
-
-func columnIndex(letter string) int {
-	result := 0
-	for _, r := range letter {
-		result = result*26 + int(r-'A'+1)
-	}
-	return result - 1
 }
