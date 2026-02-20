@@ -37,6 +37,7 @@ Inspection methods:
 - `(*Inspector).InspectWithDetails() (*FileInfo, error)`
 - `(*Inspector).InspectMarkdown() (string, error)`
 - `(*Inspector).InspectWithDetailsMarkdown() (string, error)`
+- `(*Inspector).MarkdownFromInfo(info *FileInfo, detailed bool) string`
 - `(*Inspector).InspectTOON() (string, error)`
 - `(*Inspector).InspectWithDetailsTOON() (string, error)`
 - `(*Inspector).InspectWithDetailsTOONSample() (string, error)`
@@ -103,6 +104,18 @@ What it does:
 - opens a hardcoded workbook path in `example/main.go`
 - prints progress to stdout
 - runs `InspectWithDetails()`
-- writes full Markdown output to `out.md`
+- writes full Markdown output to `out.md` using `MarkdownFromInfo(...)` (no second inspect pass)
 
 If you run the example locally, update the workbook path in `example/main.go` first.
+
+## Progress Phases
+
+Common phases emitted through `ProgressInfo.Phase`:
+
+- `inspect_sheets`
+- `inspect_details`
+- `scan_sheet_rows`
+- `markdown_scan_rows`
+- `markdown_sections`
+- `toon_full_values`
+- `toon_full_values_rows`
