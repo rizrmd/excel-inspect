@@ -1,0 +1,218 @@
+# Excel Inspect Report
+
+## Sheets
+
+| Name | Rows | Columns |
+| --- | ---: | ---: |
+| HQ GIANT | 467 | 8 |
+| HQ CV | 203 | 2 |
+
+## Sheet Details
+
+### HQ GIANT
+
+- Rows: 467
+- Columns: 72
+- Headers: 71
+- Header names: Link Website Mocil, POSISI UNIT, STATUS UNIT, APPRAISER, SOURCE OF PURCHASE, DETAIL SOURCE OF PURCHASE, NO, STATUS, PLATE NO, MERK, TYPE, TRANSMITION, YEAR, UNIT CATEGORY, COLOR, ODOMETER, STNK, BPKB - NAME, CHASIS NUMBER, ENGINE NUMBER, PURCHASE DATE, AGING, CREDIT PRICE, CASH PRICE, SELLING PRICE, PROPOSAL B2B, EST AUCTION PRICE, MARKET PRICE - CREDIT, MARKET PRICE CASH, Fisik Body Repair, Fisik General Repair, Dokumen, Komisi Sales, Biaya Lain Lain, BBM, TOTAL ESTIMATION RECONDITION, BUYING PRICE, Fisik Body Repair, Fisik General Repair (salon), Dokumen (stnk), komisi sales, Biaya lain-lain, BBM2, TOTAL ACTUAL RECONDITION, NILAI STOCK (BUYING + ACT. RECON), VAT 11%, REFUND, VAT 11% REFUND, TOTAL NILAI STOCK (EST.), TOTAL NILAI STOCK (ACT.), TOTAL NILAI STOCK II (ACT.), AMOUNT GP (PREDICTION), % GP (PREDICTION), NOTES DOCUMENT, MR2, HANDOVER, SOURCE (SOLD), REMARKS, EST. NILAI STOCK (BUYING + EST RECON), Harga Real Jual Credit, Harga Real Jual Cash, KETERANGAN, CABANG, NOTES UNIT, Beginning Balance, Realized, Additional, Ending Balance, Deal, Reject, Cancel
+
+#### Columns
+
+| # | Name | Start | Type | Samples |
+| ---: | --- | --- | --- | --- |
+| 1 | Link Website Mocil | A2 | string | BINTARO, BINTARO, HQ00034, HQ00032, HQ00011 |
+| 2 | POSISI UNIT | B2 | string | DISPLAY, DISPLAY, BINTARO, CINERE, CINERE |
+| 3 | STATUS UNIT | C2 | string | RIVKI ARITAMI / HQ2, RIVKI ARITAMI / HQ2, DISPLAY, DISPLAY, DISPLAY |
+| 4 | APPRAISER | D2 | string | TRADE IN MITSUBISHI, REFERENSI - OTHERS, ADITYA ARIFANDI / HQ1, ADITYA ARIFANDI / HQ1, RIVKI ARITAMI / HQ2 |
+| 5 | SOURCE OF PURCHASE | E2 | number | 1, 2, AUCTION, AUCTION, TRADE IN MITSUBISHI |
+| 6 | DETAIL SOURCE OF PURCHASE | F2 | string | SOLD, SOLD, IBID, IBID, 5 |
+| 7 | NO | G2 | string | B2364TO, B1761SLP, 3, 4, SOLD |
+| 8 | STATUS | H2 | string | TOYOTA, MITSUBISHI, SOLD, SOLD, B1224SMQ |
+| 9 | PLATE NO | I2 | string | Kijang Innova G AT, Outlander Px Action, B1384DOD, B2554UZF, MITSUBISHI |
+| 10 | MERK | J2 | string | AUTOMATIC, AUTOMATIC, TOYOTA, MITSUBISHI, Xpander 1.5L Ultimate-K (4X2) |
+| 11 | TYPE | K2 | number | 2008, 2017, New Yaris Cross GR Sport Hybrid AT, Xpander Ultimate 1.5 AT, AUTOMATIC |
+| 12 | TRANSMITION | L2 | string | MPV, COMPACT SUV, AUTOMATIC, AUTOMATIC, 2019 |
+| 13 | YEAR | M2 | string | #N/A, Merah Metalik, 2023, 2021, MPV |
+| 14 | UNIT CATEGORY | N2 | number | 180234, 104273, Putih, Hitam, Abu-Abu |
+| 15 | COLOR | O2 | number | 2025-08-14, 2025-08-09, 27057, 67453, 95001 |
+| 16 | ODOMETER | P2 | string | PT HARINDO, IVAN TANDYAJAYA, 2024-08-11, 2025-09-21, 2025-12-18 |
+| 17 | STNK | Q2 | string | MHFXW42G682121568, MK2GAWP2THK000032, PT TOYOTA ASTRA F S, PT SERASI AUTO RAYA, L MUMPUNI ERNI WIRASTI |
+| 18 | BPKB - NAME | R2 | string | 1TR6595801, 4B11SL9154, MHFAB8BF9P0001886, MK2NCLTARMJ002368, MK2NCWTARKJ004446 |
+| 19 | CHASIS NUMBER | S2 | number | 2025-01-25, 2025-01-13, 2NRY093760, 4A91KAC2927, 4A91GM2302 |
+| 20 | ENGINE NUMBER | T2 | number | 76, 91, 2025-03-21, 2025-03-21, 2025-02-25 |
+| 21 | PURCHASE DATE | U2 | number | 92000000, 175000000, 27, 32, 57 |
+| 22 | AGING | V2 | number | 0.7, 0.7, 315000000, 220000000, 195249217 |
+| 23 | CREDIT PRICE | W2 | number | 64399999.999999993, 122499999.99999999, 0.7, 0.7, 0.7 |
+| 24 | CASH PRICE | X2 | number | 106000000, 177000000, 220500000, 154000000, 136674451.90000001 |
+| 25 | SELLING PRICE | Y2 | number | 106000000, 185000000, 335000000, 220000000, 195000000 |
+| 26 | PROPOSAL B2B | Z2 | number | 3000000, 900000, 350000000, 230000000, 205000000 |
+| 27 | EST AUCTION PRICE | AA2 | number | 2500000, 100000, 1700000, 2000000, 2000000 |
+| 28 | MARKET PRICE - CREDIT | AB2 | number | 3500000, 2000000, 1700000, 1700000, 1000000 |
+| 29 | MARKET PRICE CASH | AC2 | number | 2000000, 3000000, 9000000, 100000, 100000 |
+| 30 | Fisik Body Repair | AD2 | number | 11000000, 168000000, 2000000, 2000000, 2000000 |
+| 31 | Fisik General Repair | AE2 | number | 76000000, 0, 2000000, 2000000, 5100000 |
+| 32 | Dokumen | AF2 | number | 1100000, 16400000, 7800000, 180000000, 4800000 |
+| 33 | Komisi Sales | AG2 | number | 0, 299000000, 203000000, 2800000, 141000000 |
+| 34 | Biaya Lain Lain | AH2 | number | 0, 0, 1200000, 1500000, 750000 |
+| 35 | BBM | AI2 | number | 0, 400000, 770742, 0, 2276027 |
+| 36 | TOTAL ESTIMATION RECONDITION | AJ2 | number | 1100000, 0, 0, 3600000, 0 |
+| 37 | BUYING PRICE | AK2 | number | 0, 169100000, 2000000, 2000000, 0 |
+| 38 | Fisik Body Repair | AL2 | number | 76000000, 1904055.3907022756, 0, 0, 7900000 |
+| 39 | Fisik General Repair (salon) | AM2 | number | 1000989.1196834819, 0, 2400000, 3970742, 187900000 |
+| 40 | Dokumen (stnk) | AN2 | number | 0, 169100000, 301400000, 206970742, 2124373.2809099904 |
+| 41 | komisi sales | AO2 | number | 76000000, 118369999.99999999, 3427299.7032640958, 2393669.6340257176, 11000000 |
+| 42 | Biaya lain-lain | AP2 | number | 53200000, 2797161.2265084055, 0, 12597722, 1110091.7398999999 |
+| 43 | BBM2 | AQ2 | number | 10499307.616221556, 2.3085142857142842E-2, 301400000, 1271329.7394324096, 187900000 |
+| 44 | TOTAL ACTUAL RECONDITION | AR2 | number | 0.16482608695652165, BM/BS/KS, 210980000, 206970742, 131529999.99999999 |
+| 45 | NILAI STOCK (BUYING + ACT. RECON) | AS2 | string | GITA, Liyana, 7120890.2077151174, 144879519.39999998, 10580326.385433014 |
+| 46 | VAT 11% | AT2 | number | 2025-04-11, 2025-04-14, 3.2649523809523739E-2, 15373386.438579297, 7.8264151251173059E-2 |
+| 47 | REFUND | AU2 | string | WALK IN, IG, HERMAN (Carryover MR), 0.10092528369742643, BM/BS/KS |
+| 48 | VAT 11% REFUND | AV2 | string | CASH, CASH, 2025-04-17, KS, Hendy |
+| 49 | TOTAL NILAI STOCK (EST.) | AW2 | number | 87000000, 171000000, Referensi, ESA, 2025-04-23 |
+| 50 | TOTAL NILAI STOCK (ACT.) | AX2 | number | 102000000, 178000000, CASH, 2025-04-22, IG |
+| 51 | TOTAL NILAI STOCK II (ACT.) | AY2 | number | 102000000, 188000000, 315400000, WEB DSSM, CREDIT BCAF |
+| 52 | AMOUNT GP (PREDICTION) | AZ2 | string | PGM, PGM, 345000000, CREDIT DSF, 185100000 |
+| 53 | % GP (PREDICTION) | BA2 | number | 0, 0, 355000000, 210800000, 200000000 |
+| 54 | NOTES DOCUMENT | BB2 | number | 0, 0, PGM, 220000000, 210000000 |
+| 55 | MR2 | BC2 | number | 0, 0, 0, 228000000, PGM |
+| 56 | HANDOVER | BD2 | number | 10499307.616221556, 2797161.2265084055, 0, PGM, 0 |
+| 57 | SOURCE (SOLD) | BE2 | number | 0, 0, 0, 0 |
+| 58 | REMARKS | BF2 | number | 0, 0, 0 |
+| 59 | EST. NILAI STOCK (BUYING + EST RECON) | BG2 | number | 0, 10580326.385433014, 0 |
+| 60 | Harga Real Jual Credit | BH2 | number | 5137016.5135075478 |
+| 61 | Harga Real Jual Cash | BI2 |  |  |
+| 62 | KETERANGAN | BJ2 |  |  |
+| 63 | CABANG | BK2 |  |  |
+| 64 | NOTES UNIT | BL2 |  |  |
+| 65 | Beginning Balance | BM2 |  |  |
+| 66 | Realized | BN2 |  |  |
+| 67 | Additional | BO2 |  |  |
+| 68 | Ending Balance | BP2 |  |  |
+| 69 | Deal | BQ2 |  |  |
+| 70 | Reject | BR2 |  |  |
+| 71 | Cancel | BS2 |  |  |
+
+#### Sections
+
+| # | Title | Header Row | Start Row | End Row | Rows | Columns |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | HANDOVER 2025-04-01 CROSS SELLING | 2 | 3 | 9 | 7 | 71 |
+| 2 | HANDOVER 2025-04-01 NON CROSS SELLING | 10 | 11 | 21 | 11 | 64 |
+| 3 | HANDOVER 2025-05-01 CROSS SELLING | 22 | 23 | 31 | 9 | 64 |
+| 4 | HANDOVER 2025-05-01 NON CROSS SELLING | 32 | 33 | 48 | 16 | 64 |
+| 5 | HANDOVER 2025-06-01 CROSS SELLING | 49 | 50 | 54 | 13 | 64 |
+| 6 | HANDOVER 2025-06-01 NON CROSS SELLING | 55 | 56 | 77 | 37 | 64 |
+| 7 | HANDOVER 2025-08-01 CROSS SELLING | 103 | 104 | 113 | 10 | 64 |
+| 8 | HANDOVER 2025-08-01 NON CROSS SELLING | 114 | 115 | 141 | 27 | 64 |
+| 9 | HANDOVER 2025-09-01 CROSS SELLING | 142 | 143 | 148 | 6 | 64 |
+| 10 | HANDOVER 2025-09-01 NON CROSS SELLING | 149 | 150 | 175 | 26 | 64 |
+| 11 | HANDOVER 2025-10-25 CROSS SELLING | 176 | 177 | 186 | 10 | 64 |
+| 12 | HANDOVER 2025-10-25 NON CROSS SELLING | 187 | 188 | 215 | 28 | 64 |
+| 13 | HANDOVER 2025-11-25 CROSS SELLING | 216 | 217 | 226 | 10 | 64 |
+| 14 | HANDOVER 2025-11-25 NON CROSS SELLING | 227 | 228 | 264 | 37 | 64 |
+| 15 | HANDOVER 2025-12-25 CROSS SELLING | 265 | 266 | 285 | 20 | 64 |
+| 16 | HANDOVER 2025-12-25 NON CROSS SELLING | 286 | 287 | 324 | 38 | 64 |
+| 17 | HANDOVER 2026-01-26 CROSS SELLING | 325 | 326 | 336 | 11 | 64 |
+| 18 | HANDOVER 2026-01-26 NON CROSS SELLING | 337 | 338 | 382 | 45 | 64 |
+| 19 | HANDOVER 2026-02-26 CROSS SELLING | 383 | 384 | 386 | 3 | 64 |
+| 20 | HANDOVER 2026-02-26 NON CROSS SELLING | 387 | 388 | 417 | 30 | 64 |
+| 21 | UNIT READY 34 | 418 | 419 | 466 | 48 | 72 |
+
+### HQ CV
+
+- Rows: 203
+- Columns: 72
+- Headers: 71
+- Header names: KODE, POSISI UNIT, STATUS UNIT, APPRAISER, SOURCE OF PURCHASE, DETAIL SOURCE OF PURCHASE, NO, STATUS, PLATE NO, MERK, TYPE, TRANSMITION, YEAR, UNIT CATEGORY, COLOR, ODOMETER, STNK, BPKB - NAME, CHASIS NUMBER, ENGINE NUMBER, PURCHASE DATE, AGING, CREDIT PRICE, CASH PRICE, Selling Price, PROPOSAL B2B, EST AUCTION PRICE, MARKET PRICE - CREDIT, MARKET PRICE CASH, Fisik Body Repair, Fisik General Repair, Dokumen, Komisi Sales, Biaya Lain Lain, BBM, TOTAL ESTIMATION RECONDITION, BUYING PRICE, Fisik Body Repair, Fisik General Repair (salon), Dokumen (stnk), komisi sales, Biaya lain-lain, BBM2, TOTAL ACTUAL RECONDITION, NILAI STOCK (BUYING + ACT. RECON), VAT 12%, REFUND, VAT 11% REFUND, TOTAL NILAI STOCK (EST.), TOTAL NILAI STOCK (ACT.), TOTAL NILAI STOCK II (ACT.), AMOUNT GP (PREDICTION), % GP (PREDICTION), NOTES DOCUMENT, MR2, HANDOVER, SOURCE (SOLD), REMARKS, EST. NILAI STOCK (BUYING + EST RECON), Harga Real Jual Credit, Harga Real Jual Cash, KETERANGAN, CABANG, NOTES UNIT, Beginning Balance, Realized, Additional, Ending Balance, Deal, Reject, Cancel
+
+#### Columns
+
+| # | Name | Start | Type | Samples |
+| ---: | --- | --- | --- | --- |
+| 1 | KODE | A2 | string | BINTARO, BINTARO, 0, 0.12968506976991148, Juni 2025 |
+| 2 | POSISI UNIT | B2 | string | DISPLAY, DISPLAY, 339000000 |
+| 3 | STATUS UNIT | C2 | string | MUHAMMAD RIVKI, FANDY MARDI, 339000000 |
+| 4 | APPRAISER | D2 | string | REPOSES, REPOSES, 3688427.2997032646 |
+| 5 | SOURCE OF PURCHASE | E2 | string | JBA, JBA, 291826668 |
+| 6 | DETAIL SOURCE OF PURCHASE | F2 | number | 1, 2, 291826668 |
+| 7 | NO | G2 | string | SOLD, SOLD, 43484904.70029673 |
+| 8 | STATUS | H2 | string | B9880FVC, B9598FCM, 0.12968506976991148 |
+| 9 | PLATE NO | I2 | string | MITSUBISHI, MITSUBISHI |
+| 10 | MERK | J2 | string | L300 PU Flat Deck, L300 PU Flat Deck |
+| 11 | TYPE | K2 | string | MANUAL, MANUAL |
+| 12 | TRANSMITION | L2 | number | 2024, 2023 |
+| 13 | YEAR | M2 | string | CV, CV |
+| 14 | UNIT CATEGORY | N2 | string | HITAM, HITAM SILVER |
+| 15 | COLOR | O2 | number | 6874, 86740 |
+| 16 | ODOMETER | P2 | number | 2025-10-02, 2025-11-23 |
+| 17 | STNK | Q2 | string | MK2L0PUMZRJ000415, MK2L0PUMZPJ001636 |
+| 18 | BPKB - NAME | R2 | string | 4N14UAT0855, 4N14UAP5846 |
+| 19 | CHASIS NUMBER | S2 | number | 2025-04-24, 2025-04-24 |
+| 20 | ENGINE NUMBER | T2 | number | 14, 20 |
+| 21 | PURCHASE DATE | U2 | number | 174000000, 165000000 |
+| 22 | AGING | V2 | number | 1, 1 |
+| 23 | CREDIT PRICE | W2 | number | 174000000, 165000000 |
+| 24 | CASH PRICE | X2 | number | 180000000, 170000000 |
+| 25 | Selling Price | Y2 | number | 188000000, 178000000 |
+| 26 | PROPOSAL B2B | Z2 | number | 2000000, 2500000 |
+| 27 | EST AUCTION PRICE | AA2 | number | 3000000, 2500000 |
+| 28 | MARKET PRICE - CREDIT | AB2 | number | 4095000, 6007000 |
+| 29 | MARKET PRICE CASH | AC2 | number | 2000000, 2000000 |
+| 30 | Fisik Body Repair | AD2 | number | 11095000, 13007000 |
+| 31 | Fisik General Repair | AE2 | number | 145000000, 137000000 |
+| 32 | Dokumen | AF2 | number | 250000, 0 |
+| 33 | Komisi Sales | AG2 | number | 2653168, 0 |
+| 34 | Biaya Lain Lain | AH2 | number | 750000, 5173500 |
+| 35 | BBM | AI2 | number | 0, 0 |
+| 36 | TOTAL ESTIMATION RECONDITION | AJ2 | number | 500000, 500000 |
+| 37 | BUYING PRICE | AK2 | number | 0, 0 |
+| 38 | Fisik Body Repair | AL2 | number | 4153168, 5673500 |
+| 39 | Fisik General Repair (salon) | AM2 | number | 149153168, 142673500 |
+| 40 | Dokumen (stnk) | AN2 | number | 1893175.0741839765, 1795252.2255192881 |
+| 41 | komisi sales | AO2 | number | 0, 0 |
+| 42 | Biaya lain-lain | AP2 | number | 149153168, 142673500 |
+| 43 | BBM2 | AQ2 | number | 149153168, 142673500 |
+| 44 | TOTAL ACTUAL RECONDITION | AR2 | number | 22953656.925816029, 20531247.7744807 |
+| 45 | NILAI STOCK (BUYING + ACT. RECON) | AS2 | number | 0.13336866179310347, 0.1258005545454545 |
+| 46 | VAT 12% | AT2 | string | KIR, KIR/KS |
+| 47 | REFUND | AU2 | string | Denny, Denny |
+| 48 | VAT 11% REFUND | AV2 | number | 2025-05-08, 2025-05-14 |
+| 49 | TOTAL NILAI STOCK (EST.) | AW2 | string | WALK IN, WALK IN |
+| 50 | TOTAL NILAI STOCK (ACT.) | AX2 | string | CASH, CASH |
+| 51 | TOTAL NILAI STOCK II (ACT.) | AY2 | number | 156095000, 150007000 |
+| 52 | AMOUNT GP (PREDICTION) | AZ2 | number | 171000000, 162500000 |
+| 53 | % GP (PREDICTION) | BA2 | number | 178000000, 170000000 |
+| 54 | NOTES DOCUMENT | BB2 | string | CV, CV |
+| 55 | MR2 | BC2 |  |  |
+| 56 | HANDOVER | BD2 |  |  |
+| 57 | SOURCE (SOLD) | BE2 |  |  |
+| 58 | REMARKS | BF2 |  |  |
+| 59 | EST. NILAI STOCK (BUYING + EST RECON) | BG2 |  |  |
+| 60 | Harga Real Jual Credit | BH2 |  |  |
+| 61 | Harga Real Jual Cash | BI2 |  |  |
+| 62 | KETERANGAN | BJ2 |  |  |
+| 63 | CABANG | BK2 |  |  |
+| 64 | NOTES UNIT | BL2 |  |  |
+| 65 | Beginning Balance | BM2 |  |  |
+| 66 | Realized | BN2 |  |  |
+| 67 | Additional | BO2 |  |  |
+| 68 | Ending Balance | BP2 |  |  |
+| 69 | Deal | BQ2 |  |  |
+| 70 | Reject | BR2 |  |  |
+| 71 | Cancel | BS2 |  |  |
+
+#### Sections
+
+| # | Title | Header Row | Start Row | End Row | Rows | Columns |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 1 | Mei 2025 Adjustment Inventory | 2 | 3 | 7 | 5 | 71 |
+| 2 | Juni 2025 | 8 | 9 | 36 | 28 | 64 |
+| 3 | Juli 2025 | 37 | 38 | 52 | 15 | 64 |
+| 4 | Agustus 2025 | 53 | 54 | 81 | 28 | 64 |
+| 5 | 2025-09-01 | 82 | 83 | 102 | 20 | 64 |
+| 6 | Oktober 2025 | 103 | 104 | 119 | 16 | 64 |
+| 7 | 2025-11-01 0 | 120 | 121 | 135 | 15 | 64 |
+| 8 | Des-25 | 136 | 137 | 149 | 13 | 64 |
+| 9 | Jan - 26 | 150 | 151 | 168 | 18 | 64 |
+| 10 | FEB 26 | 169 | 170 | 175 | 6 | 64 |
+| 11 | UNIT READY BOOKED | 176 | 177 | 203 | 27 | 72 |

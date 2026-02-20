@@ -211,6 +211,107 @@ func (i *Inspector) InspectWithDetailsTOONSample() (string, error) {
 	return toon.Marshal(buildCompactTOONPayloadSample(info), nil)
 }
 
+func (i *Inspector) InspectMarkdown() (string, error) {
+	info, err := i.Inspect()
+	if err != nil {
+		return "", err
+	}
+	return buildMarkdown(info, false), nil
+}
+
+func (i *Inspector) InspectWithDetailsMarkdown() (string, error) {
+	info, err := i.InspectWithDetails()
+	if err != nil {
+		return "", err
+	}
+	return buildMarkdown(info, true), nil
+}
+
+func buildMarkdown(info *FileInfo, detailed bool) string {
+	var b strings.Builder
+
+	b.WriteString("# Excel Inspect Report\n\n")
+	b.WriteString("## Sheets\n\n")
+	b.WriteString("| Name | Rows | Columns |\n")
+	b.WriteString("| --- | ---: | ---: |\n")
+	for _, s := range info.Sheets {
+		b.WriteString(fmt.Sprintf("| %s | %d | %d |\n", escapeMarkdownCell(s.Name), s.RowCount, s.ColumnCount))
+	}
+
+	if !detailed || len(info.SheetDetails) == 0 {
+		return b.String()
+	}
+
+	b.WriteString("\n## Sheet Details\n")
+	for _, d := range info.SheetDetails {
+		b.WriteString(fmt.Sprintf("\n### %s\n\n", escapeMarkdownCell(d.Name)))
+		b.WriteString(fmt.Sprintf("- Rows: %d\n", d.RowCount))
+		b.WriteString(fmt.Sprintf("- Columns: %d\n", d.ColumnCount))
+		b.WriteString(fmt.Sprintf("- Headers: %d\n", len(d.Headers)))
+
+		if len(d.Headers) > 0 {
+			headers := make([]string, 0, len(d.Headers))
+			for _, h := range d.Headers {
+				if strings.TrimSpace(h) == "" {
+					continue
+				}
+				headers = append(headers, escapeMarkdownCell(h))
+			}
+			if len(headers) > 0 {
+				b.WriteString(fmt.Sprintf("- Header names: %s\n", strings.Join(headers, ", ")))
+			}
+		}
+
+		if len(d.Columns) > 0 {
+			b.WriteString("\n#### Columns\n\n")
+			b.WriteString("| # | Name | Start | Type | Samples |\n")
+			b.WriteString("| ---: | --- | --- | --- | --- |\n")
+			for idx, c := range d.Columns {
+				samples := toSampleStrings(c.SampleValues)
+				b.WriteString(fmt.Sprintf(
+					"| %d | %s | %s | %s | %s |\n",
+					idx+1,
+					escapeMarkdownCell(c.Name),
+					escapeMarkdownCell(c.StartPosition),
+					escapeMarkdownCell(c.DataType),
+					escapeMarkdownCell(strings.Join(samples, ", ")),
+				))
+			}
+		}
+
+		if len(d.Sections) > 0 {
+			b.WriteString("\n#### Sections\n\n")
+			b.WriteString("| # | Title | Header Row | Start Row | End Row | Rows | Columns |\n")
+			b.WriteString("| ---: | --- | ---: | ---: | ---: | ---: | ---: |\n")
+			for idx, s := range d.Sections {
+				b.WriteString(fmt.Sprintf(
+					"| %d | %s | %d | %d | %d | %d | %d |\n",
+					idx+1,
+					escapeMarkdownCell(s.Title),
+					s.HeaderRow,
+					s.StartRow,
+					s.EndRow,
+					s.RowCount,
+					s.ColumnCount,
+				))
+			}
+		}
+	}
+
+	return b.String()
+}
+
+func escapeMarkdownCell(v string) string {
+	v = strings.TrimSpace(v)
+	if v == "" {
+		return ""
+	}
+	v = strings.ReplaceAll(v, "\\", "\\\\")
+	v = strings.ReplaceAll(v, "|", "\\|")
+	v = strings.ReplaceAll(v, "\n", " ")
+	return v
+}
+
 func buildCompactTOONPayloadSample(info *FileInfo) map[string]interface{} {
 	payload := map[string]interface{}{
 		"sheet_details": nil,

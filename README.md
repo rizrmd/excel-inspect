@@ -1,13 +1,13 @@
 # excel-inspect
 
-`excel-inspect` is a Go library for inspecting `.xlsx` files and exporting results as JSON-compatible structs or TOON.
+`excel-inspect` is a Go library for inspecting `.xlsx` files and exporting results as JSON-compatible structs, Markdown, or TOON.
 
 ## What Is In This Codebase
 
 - `inspect.go`: library implementation (`package excelinspect`)
-- `example/main.go`: runnable example that inspects one file and writes TOON output to `out.toon`
+- `example/main.go`: runnable example that inspects one file and writes Markdown output to `out.md`
 - `go.mod` / `go.sum`: module and dependencies
-- `out.toon`: generated output file used by the example
+- `out.md`: generated output file used by the example
 
 ## Core Capabilities
 
@@ -20,6 +20,7 @@
   - section breakdown when multiple header regions are detected
 - Export as:
   - Go structs (`*FileInfo`)
+  - Markdown text output (`InspectMarkdown`, `InspectWithDetailsMarkdown`)
   - TOON text output (`InspectTOON`, `InspectWithDetailsTOON`, `InspectWithDetailsTOONSample`)
 - Emit progress updates via callback or channel
 
@@ -34,6 +35,8 @@ Inspection methods:
 
 - `(*Inspector).Inspect() (*FileInfo, error)`
 - `(*Inspector).InspectWithDetails() (*FileInfo, error)`
+- `(*Inspector).InspectMarkdown() (string, error)`
+- `(*Inspector).InspectWithDetailsMarkdown() (string, error)`
 - `(*Inspector).InspectTOON() (string, error)`
 - `(*Inspector).InspectWithDetailsTOON() (string, error)`
 - `(*Inspector).InspectWithDetailsTOONSample() (string, error)`
@@ -96,10 +99,10 @@ go run ./example
 
 What it does:
 
-- removes existing `out.toon` if present
+- removes existing `out.md` if present
 - opens a hardcoded workbook path in `example/main.go`
 - prints progress to stdout
 - runs `InspectWithDetails()`
-- writes full TOON output to `out.toon`
+- writes full Markdown output to `out.md`
 
 If you run the example locally, update the workbook path in `example/main.go` first.
