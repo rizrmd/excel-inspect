@@ -12,7 +12,10 @@ import (
 func main() {
 	start := time.Now()
 
-	outPath := "out.txt"
+	outPath := "out.toon"
+	if err := os.Remove("out.txt"); err != nil && !os.IsNotExist(err) {
+		log.Fatalf("Failed to delete existing out.txt: %v", err)
+	}
 	if err := os.Remove(outPath); err != nil && !os.IsNotExist(err) {
 		log.Fatalf("Failed to delete existing %s: %v", outPath, err)
 	}

@@ -5,9 +5,9 @@
 ## What Is In This Codebase
 
 - `inspect.go`: library implementation (`package excelinspect`)
-- `example/main.go`: runnable example that inspects one file and writes TOON output to `out.txt`
+- `example/main.go`: runnable example that inspects one file and writes TOON output to `out.toon`
 - `go.mod` / `go.sum`: module and dependencies
-- `out.txt`: generated output file used by the example
+- `out.toon`: generated output file used by the example
 
 ## Core Capabilities
 
@@ -96,10 +96,10 @@ go run ./example
 
 What it does:
 
-- removes existing `out.txt` if present
+- removes existing `out.toon` if present
 - opens a hardcoded workbook path in `example/main.go`
 - prints progress to stdout
 - runs `InspectWithDetails()`
-- writes full TOON output to `out.txt`
+- writes full TOON output to `out.toon`
 
 If you run the example locally, update the workbook path in `example/main.go` first.
