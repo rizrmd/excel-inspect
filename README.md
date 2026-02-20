@@ -5,7 +5,7 @@ Go library to inspect Excel file structure: sheets, headers, columns, row counts
 ## Installation
 
 ```bash
-go get github.com/yourusername/excel-inspect
+go get github.com/rizrmd/excel-inspect
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ import (
     "fmt"
     "log"
 
-    excelinspect "github.com/yourusername/excel-inspect"
+    excelinspect "github.com/rizrmd/excel-inspect"
 )
 
 func main() {
