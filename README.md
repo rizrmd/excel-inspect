@@ -17,7 +17,7 @@
   - detected headers
   - column metadata (`name`, `start_position`, `data_type`)
   - sample values
-  - section breakdown when multiple header regions are detected
+  - section breakdown when multiple header regions are detected, including per-section tables in Markdown output
 - Export as:
   - Go structs (`*FileInfo`)
   - Markdown text output (`InspectMarkdown`, `InspectWithDetailsMarkdown`)

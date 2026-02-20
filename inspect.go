@@ -216,7 +216,7 @@ func (i *Inspector) InspectMarkdown() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return buildMarkdown(info, false), nil
+	return i.MarkdownFromInfo(info, false), nil
 }
 
 func (i *Inspector) InspectWithDetailsMarkdown() (string, error) {
@@ -224,10 +224,14 @@ func (i *Inspector) InspectWithDetailsMarkdown() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return buildMarkdown(info, true), nil
+	return i.MarkdownFromInfo(info, true), nil
 }
 
-func buildMarkdown(info *FileInfo, detailed bool) string {
+func (i *Inspector) MarkdownFromInfo(info *FileInfo, detailed bool) string {
+	return i.buildMarkdown(info, detailed)
+}
+
+func (i *Inspector) buildMarkdown(info *FileInfo, detailed bool) string {
 	var b strings.Builder
 
 	b.WriteString("# Excel Inspect Report\n\n")
@@ -242,25 +246,21 @@ func buildMarkdown(info *FileInfo, detailed bool) string {
 		return b.String()
 	}
 
+	totalSections := 0
+	for _, d := range info.SheetDetails {
+		totalSections += len(d.Sections)
+	}
+	doneSections := 0
+	if totalSections > 0 {
+		i.emitProgress("markdown_sections", "", 0, totalSections)
+	}
+
 	b.WriteString("\n## Sheet Details\n")
 	for _, d := range info.SheetDetails {
 		b.WriteString(fmt.Sprintf("\n### %s\n\n", escapeMarkdownCell(d.Name)))
 		b.WriteString(fmt.Sprintf("- Rows: %d\n", d.RowCount))
 		b.WriteString(fmt.Sprintf("- Columns: %d\n", d.ColumnCount))
 		b.WriteString(fmt.Sprintf("- Headers: %d\n", len(d.Headers)))
-
-		if len(d.Headers) > 0 {
-			headers := make([]string, 0, len(d.Headers))
-			for _, h := range d.Headers {
-				if strings.TrimSpace(h) == "" {
-					continue
-				}
-				headers = append(headers, escapeMarkdownCell(h))
-			}
-			if len(headers) > 0 {
-				b.WriteString(fmt.Sprintf("- Header names: %s\n", strings.Join(headers, ", ")))
-			}
-		}
 
 		if len(d.Columns) > 0 {
 			b.WriteString("\n#### Columns\n\n")
@@ -280,25 +280,125 @@ func buildMarkdown(info *FileInfo, detailed bool) string {
 		}
 
 		if len(d.Sections) > 0 {
+			maxEndRow := 0
+			for _, s := range d.Sections {
+				if s.EndRow > maxEndRow {
+					maxEndRow = s.EndRow
+				}
+			}
+			rowsByNum := i.sheetRowsByNumber(d.Name, maxEndRow)
+
 			b.WriteString("\n#### Sections\n\n")
-			b.WriteString("| # | Title | Header Row | Start Row | End Row | Rows | Columns |\n")
-			b.WriteString("| ---: | --- | ---: | ---: | ---: | ---: | ---: |\n")
 			for idx, s := range d.Sections {
-				b.WriteString(fmt.Sprintf(
-					"| %d | %s | %d | %d | %d | %d | %d |\n",
-					idx+1,
-					escapeMarkdownCell(s.Title),
-					s.HeaderRow,
-					s.StartRow,
-					s.EndRow,
-					s.RowCount,
-					s.ColumnCount,
-				))
+				b.WriteString(fmt.Sprintf("##### Section %d: %s\n\n", idx+1, escapeMarkdownCell(s.Title)))
+				b.WriteString(fmt.Sprintf("- Header row: %d\n", s.HeaderRow))
+				b.WriteString(fmt.Sprintf("- Start row: %d\n", s.StartRow))
+				b.WriteString(fmt.Sprintf("- End row: %d\n", s.EndRow))
+				b.WriteString(fmt.Sprintf("- Rows: %d\n", s.RowCount))
+				b.WriteString(fmt.Sprintf("- Columns: %d\n", s.ColumnCount))
+				b.WriteString("\n")
+
+				headers := s.Headers
+				if len(headers) == 0 {
+					headers = make([]string, s.ColumnCount)
+					for hIdx := range headers {
+						headers[hIdx] = fmt.Sprintf("Column %d", hIdx+1)
+					}
+				}
+
+				values := sectionValuesFromRows(rowsByNum, s, len(headers))
+				if len(values) == 0 {
+					b.WriteString("_No section rows found._\n\n")
+					doneSections++
+					i.emitProgress("markdown_sections", d.Name, doneSections, totalSections)
+					continue
+				}
+
+				b.WriteString("| ")
+				for hIdx, h := range headers {
+					if hIdx > 0 {
+						b.WriteString(" | ")
+					}
+					b.WriteString(escapeMarkdownCell(h))
+				}
+				b.WriteString(" |\n")
+
+				b.WriteString("| ")
+				for hIdx := range headers {
+					if hIdx > 0 {
+						b.WriteString(" | ")
+					}
+					b.WriteString("---")
+				}
+				b.WriteString(" |\n")
+
+				for _, row := range values {
+					b.WriteString("| ")
+					for cIdx, cell := range row {
+						if cIdx > 0 {
+							b.WriteString(" | ")
+						}
+						b.WriteString(escapeMarkdownCell(cell))
+					}
+					b.WriteString(" |\n")
+				}
+				b.WriteString("\n")
+				doneSections++
+				i.emitProgress("markdown_sections", d.Name, doneSections, totalSections)
 			}
 		}
 	}
 
 	return b.String()
+}
+
+func sectionValuesFromRows(rowsByNum map[int][]string, section Section, width int) [][]string {
+	if width <= 0 || section.StartRow <= 0 || section.EndRow < section.StartRow {
+		return nil
+	}
+
+	out := make([][]string, 0, max(0, section.EndRow-section.StartRow+1))
+	for rowNum := section.StartRow; rowNum <= section.EndRow; rowNum++ {
+		row, ok := rowsByNum[rowNum]
+		if !ok {
+			continue
+		}
+		values := make([]string, width)
+		for idx := 0; idx < width; idx++ {
+			if idx < len(row) {
+				values[idx] = strings.TrimSpace(row[idx])
+			}
+		}
+		if isEmptyRow(values) {
+			continue
+		}
+		out = append(out, values)
+	}
+	return out
+}
+
+func (i *Inspector) sheetRowsByNumber(sheet string, maxRow int) map[int][]string {
+	if maxRow <= 0 {
+		return nil
+	}
+	rows := i.xl.ReadRows(sheet)
+	out := make(map[int][]string, maxRow)
+	rowNum := 0
+	for row := range rows {
+		rowNum++
+		if rowNum > maxRow {
+			break
+		}
+		values := make([]string, len(row.Cells))
+		for idx, cell := range row.Cells {
+			values[idx] = strings.TrimSpace(cell.Value)
+		}
+		out[rowNum] = values
+		if rowNum%100 == 0 || rowNum == maxRow {
+			i.emitProgress("markdown_scan_rows", sheet, rowNum, maxRow)
+		}
+	}
+	return out
 }
 
 func escapeMarkdownCell(v string) string {

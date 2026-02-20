@@ -52,10 +52,7 @@ func main() {
 		fmt.Printf("  - %s: %d rows, %d cols\n", s.Name, s.RowCount, s.ColumnCount)
 	}
 
-	markdownOut, err := ins.InspectWithDetailsMarkdown()
-	if err != nil {
-		log.Fatalf("Failed to render Markdown: %v", err)
-	}
+	markdownOut := ins.MarkdownFromInfo(info, true)
 	if err := os.WriteFile(outPath, []byte(markdownOut), 0o644); err != nil {
 		log.Fatalf("Failed to write %s: %v", outPath, err)
 	}
