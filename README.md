@@ -86,6 +86,6 @@ ins, err := excelinspect.New("large_file.xlsx", excelinspect.WithTimeout(30))
 ## Features
 
 - **Hidden sheets**: Automatically skipped
-- **Large files**: Optimized to read only headers and sample values (not entire file)
+- **Fast**: Uses streaming reader (~5s for 1M+ row files)
 - **Timeout**: Configurable timeout for large files
 - **Thread-safe**: Can be used concurrently with proper locking
