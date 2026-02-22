@@ -84,14 +84,20 @@ type FileInfo struct {
 }
 
 type Section struct {
-	Title      string       `json:"title"`
-	HeaderRow  int          `json:"header_row"`
-	StartRow   int          `json:"start_row"`
-	EndRow     int          `json:"end_row"`
-	Headers    []string     `json:"headers"`
-	Columns    []ColumnInfo `json:"columns"`
-	RowCount   int          `json:"row_count"`
-	ColumnCount int         `json:"column_count"`
+	Title       string       `json:"title"`
+	HeaderRow   int          `json:"header_row"`
+	StartRow    int          `json:"start_row"`
+	EndRow      int          `json:"end_row"`
+	Headers     []string     `json:"headers"`
+	Columns     []ColumnInfo `json:"columns"`
+	Rows        []SectionRow `json:"rows,omitempty"`
+	RowCount    int          `json:"row_count"`
+	ColumnCount int          `json:"column_count"`
+}
+
+type SectionRow struct {
+	RowNumber int               `json:"row_number"`
+	Values    map[string]string `json:"values"`
 }
 
 func New(filePath string, opts ...InspectorOption) (*Inspector, error) {
@@ -421,12 +427,12 @@ func buildCompactTOONPayloadSample(info *FileInfo) map[string]interface{} {
 
 	sheetMeta := make([]map[string]interface{}, 0, len(info.SheetDetails))
 	type compactCol struct {
-		sheet      string
-		columnIdx  int
-		name       string
-		startPos   string
-		dataType   string
-		samples    []string
+		sheet     string
+		columnIdx int
+		name      string
+		startPos  string
+		dataType  string
+		samples   []string
 	}
 	colIndex := make(map[string]int)
 	compactCols := make([]compactCol, 0)
@@ -693,6 +699,9 @@ func (i *Inspector) inspectSheetDetail(sheetName string) SheetDetail {
 	detail.RowCount = rowCount
 	detail.ColumnCount = maxCols
 	detail.Sections = extractSections(allRows)
+	for idx := range detail.Sections {
+		detail.Sections[idx].Rows = buildSectionRows(allRows, detail.Sections[idx])
+	}
 
 	if len(detail.Sections) > 0 {
 		detail.Headers = detail.Sections[0].Headers
@@ -710,6 +719,43 @@ func (i *Inspector) inspectSheetDetail(sheetName string) SheetDetail {
 	detail.ColumnCount = len(detail.Headers)
 	detail.Columns = buildColumnsFromSection(allRows, headerRow, detail.Headers, 5, rowCount)
 	return detail
+}
+
+func buildSectionRows(rows [][]string, section Section) []SectionRow {
+	if len(section.Headers) == 0 || section.StartRow <= 0 || section.EndRow < section.StartRow {
+		return nil
+	}
+	out := make([]SectionRow, 0, section.RowCount)
+	for rowNum := section.StartRow; rowNum <= section.EndRow; rowNum++ {
+		if rowNum-1 < 0 || rowNum-1 >= len(rows) {
+			continue
+		}
+		rawRow := rows[rowNum-1]
+		values := make(map[string]string, len(section.Headers))
+		hasData := false
+		for idx, header := range section.Headers {
+			key := strings.TrimSpace(header)
+			if key == "" {
+				continue
+			}
+			v := ""
+			if idx < len(rawRow) {
+				v = strings.TrimSpace(rawRow[idx])
+			}
+			if v != "" {
+				hasData = true
+			}
+			values[key] = v
+		}
+		if !hasData {
+			continue
+		}
+		out = append(out, SectionRow{
+			RowNumber: rowNum,
+			Values:    values,
+		})
+	}
+	return out
 }
 
 func (i *Inspector) visibleSheets(sheets []string) []string {
